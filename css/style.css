@@ -201,3 +201,18 @@ html[data-a=off] .btn,html[data-a=off] .ib,html[data-a=off] nav button,html[data
 /* выбранный свотч тоже реагирует на hover/active (иначе правило .on гасит анимацию) */
 .sw button.on:hover{transform:scale(1.08)}
 .sw button.on:active{transform:scale(.88)}
+
+/* ---- расшифровка ключей: сетка секторов ---- */
+.dbgrid{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:6px;margin:12px 0 8px}
+.dbq{position:relative;aspect-ratio:1/1;border:1px solid var(--ol);border-radius:10px;background:transparent;color:var(--t2);
+  font:500 11px/1 Roboto,"Segoe UI",sans-serif;display:grid;place-items:center;
+  transition:background .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease),border-radius .2s var(--spr),transform .15s var(--ease)}
+.dbq:hover{background:color-mix(in srgb,var(--t) 7%,transparent)}
+.dbq.try{background:color-mix(in srgb,var(--er) 32%,transparent);border-color:var(--er);color:var(--er);animation:dbpulse .9s ease-in-out infinite}
+.dbq.ok{background:var(--ok);border-color:var(--ok);color:var(--op);border-radius:14px}
+.dbq.ok::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;font-size:18px;color:var(--op);font-weight:700}
+.dbq.fail{background:color-mix(in srgb,var(--er) 16%,transparent);border-color:var(--er);color:var(--er)}
+.dbq.fail::after{content:"×";position:absolute;inset:0;display:grid;place-items:center;font-size:18px;color:var(--er);font-weight:700}
+@keyframes dbpulse{50%{opacity:.5}}
+@media(max-width:860px){.dbgrid{grid-template-columns:repeat(8,minmax(0,1fr))}}
+html[data-a=off] .dbq.try{animation:none}

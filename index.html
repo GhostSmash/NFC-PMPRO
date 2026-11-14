@@ -66,7 +66,21 @@
           <textarea id="hexa" rows="4" spellcheck="false"></textarea>
           <div class="row m"><button class="btn fil" id="mr">Читать сектор</button><button class="btn ton" id="mw">Записать сектор</button><button class="btn err" id="mf2">Форматировать</button></div>
           <p class="hint">Key A при чтении маскируется в 00 — при записи подставляется из поля «Ключи».</p></div>
-      </div></div></section>
+      </div>
+    </div>
+
+    <div class="card"><h2>Расшифровка блоков (Decode block)</h2>
+        <div class="row">
+          <div style="flex:1;min-width:110px"><label>Тип карты</label><select id="dbModel"><option value="1" selected>S50 (1 КБ)</option><option value="4">S70 (4 КБ)</option></select></div>
+          <div style="flex:1;min-width:150px"><label>Режим</label><select id="dbMode"><option value="std">Словарь</option><option value="brute">Брутфорс (маски)</option></select></div>
+          <div style="flex:1;min-width:110px"><label>Уровень</label><select id="dbLevel"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
+        </div>
+        <div id="dbgrid" class="dbgrid"></div>
+        <p class="hint" id="dbhint"></p>
+        <div class="row m"><button class="btn fil" id="dbGo">Расшифровать</button><button class="btn out" id="dbStop">Стоп</button><button class="btn ton" id="dbSave">Сохранить ключи</button></div>
+        <p class="hint">Красный квадрат — идёт перебор сектора, зелёный ✓ — ключ найден, тёмный с × — не найден. Найденный ключ подставляется в Key A. «Словарь» — частые ключи, «Брутфорс» — шаблоны ключей (повторяющийся байт, последовательности, парные маски), уровень = сколько кандидатов. Полный перебор 2<sup>48</sup> невозможен — подробнее в «Инструкции».</p>
+      </div>
+    </section>
 
     <section id="lf"><div class="g">
       <div class="card"><h2>Чтение метки 125 кГц</h2><dl class="kv">
@@ -127,6 +141,14 @@
   <h3>Подключение</h3><ul><li>Полностью закройте NFC_Pro.exe — она захватывает устройство.</li><li>«Отключить» освобождает устройство; для работы подключите его снова.</li></ul>
   <h3>Сканер</h3><ul><li>Опрашивает 13.56 МГц, затем 125 кГц, затем HID, сам открывает нужную вкладку и заполняет поля записи.</li></ul>
   <h3>MIFARE</h3><ul><li>По умолчанию Key A = FFFFFFFFFFFF; кнопка рядом выбирает Key A, Key B или оба.</li><li>«Форматировать» сбрасывает сектор: данные в 00, ключи в FF.</li><li>Каждая запись проверяется обратным чтением.</li></ul>
+  <h3>Расшифровка ключей (Decode block)</h3><ul>
+    <li><b>S50 / S70</b> — тип карты: Classic 1 КБ (16 секторов) или 4 КБ (40 секторов).</li>
+    <li><b>Словарь</b> — перебор частых ключей (заводские, NXP, популярные у СКУД). Быстро; уровень 1–4 = 8/16/24/все ключи словаря.</li>
+    <li><b>Брутфорс (маски)</b> — перебор шаблонных ключей: один байт во всех позициях, последовательности, парные/повторяющиеся маски. Уровень 1–4 = примерно 256 / 512 / 1280 / 1800 кандидатов. Полный перебор всех 2<sup>48</sup> ключей физически невозможен (годы на одну карту).</li>
+    <li><b>STA / Nested / Darkside</b> — в оригинальной программе это атаки по обмену nonce с картой. В веб-версии они недоступны: протокол программатора не отдаёт нужные обмены. Поэтому здесь только словарь и маски — результат тот же для типовых ключей.</li>
+    <li><b>Квадраты:</b> красный — идёт перебор, зелёный с ✓ — ключ найден, тёмный с × — ключ не найден. Сколько секторов расшифровано, показывается в подписи под сеткой.</li>
+    <li><b>Сохранить ключи</b> — скачивает <span class="mono">mifare-keys.txt</span> в формате <span class="mono">Sector N: Key A = XXXXXXXXXXXX</span>; найденный ключ также подставляется в поле Key A.</li>
+  </ul>
   <h3>Ограничения</h3><ul><li>Обновление прошивки не поддерживается — риск «кирпича».</li><li>Блок 0 с UID перезаписать нельзя.</li><li>Записывайте только свои метки или те, на которые есть разрешение.</li></ul>
   <div class="dact"><button class="btn txt" data-close>Закрыть</button></div></dialog>
 <div id="tt"></div><div id="pg" class="card"><div class="row" style="justify-content:space-between;margin-bottom:6px"><b id="pt"></b><b id="pp" class="mono">0%</b></div><svg viewBox="0 0 400 24" width="100%" height="24" aria-hidden="true"><line id="pk" x1="20" y1="12" x2="394" y2="12" stroke-width="6" stroke-linecap="round"/><circle cx="396" cy="12" r="3"/><path id="pw" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -137,6 +159,7 @@
 <script src="js/mifare.js"></script>
 <script src="js/lf-hid.js"></script>
 <script src="js/tools.js"></script>
+<script src="js/decode.js"></script>
 <script src="js/scanner.js"></script>
 <script src="js/main.js"></script>
 </body>

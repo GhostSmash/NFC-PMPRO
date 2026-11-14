@@ -10,9 +10,10 @@ async function attach(d){setConn(1);$('#rg').classList.add('go');$('#st1').textC
  $('#ovsn').textContent=INFO.sn||'—';$('#ovty').textContent=INFO.type!=null?'0x'+INFO.type.toString(16).toUpperCase().padStart(4,'0'):'—';$('#ovhs').textContent=INFO.ms+' мс';$('#ovrp').textContent='64 / 64 байта';$('#ovup').textContent='0x'+u.toString(16).toUpperCase();$('#ov06').textContent=INFO.raw;
  setConn(2);$('#rg').classList.remove('go');$('#rgi').innerHTML=ic('ok');$('#st1').innerHTML='<span class="ok">Устройство подключено</span>';$('#st2').textContent='Зав. номер: '+(INFO.sn||'—');setBegin('go');log('Подключено, хендшейк пройден (06 → 01 → 01 → 06).')}
 async function boot(){$('#start').classList.remove('off');dev=null;setConn(0);$('#rg').classList.remove('go');$('#rgi').innerHTML=ic('scan');$('#st1').textContent='Ожидание устройства…';
- if(!navigator.hid){$('#st1').textContent='Браузер не поддерживается';$('#st2').textContent='Нужен Chrome или Edge (WebHID). Откройте страницу в одном из них.';$('#begin').disabled=true;return}
- $('#st2').textContent='Подключите кабель USB и нажмите «Выбрать устройство».';setBegin('pick');
+ if(!navigator.hid){$('#st1').textContent='Нет WebHID';$('#st2').textContent='Для устройства нужен Chrome/Edge на ПК. Интерфейс можно посмотреть без подключения.';$('#begin').disabled=true;return}
+ $('#st2').textContent='Подключите кабель и выберите устройство.';setBegin('pick');
  const l=(await navigator.hid.getDevices()).filter(x=>x.vendorId==VID&&x.productId==PID);if(l[0])attach(l[0])}
+$('#skip').onclick=()=>{$('#start').classList.add('off');log('Режим без устройства: команды недоступны.')};
 $('#begin').onclick=async()=>{if(mode=='go')return $('#start').classList.add('off');try{const[d]=await navigator.hid.requestDevice({filters:[{vendorId:VID,productId:PID}]});if(d)attach(d)}catch(e){log('Выбор устройства: '+e.message)}};
 if(navigator.hid){navigator.hid.addEventListener('disconnect',e=>{if(e.device===dev){dev=null;log('Устройство отключено от USB.');toast('Устройство отключено.');boot()}});
  navigator.hid.addEventListener('connect',e=>{if(!dev&&e.device.vendorId==VID&&e.device.productId==PID&&$('#start').classList.contains('off')==false)attach(e.device)})}

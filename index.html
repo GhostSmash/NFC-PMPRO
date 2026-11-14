@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NFC PM-Pro — программатор 300CD Pro</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+<div id="app">
+  <header class="bar">
+    <div><h1>NFC PM-Pro</h1><small>300CD Pro · USB-HID · Mifare / EM4100 / HID prox</small></div>
+    <span class="chip s0" id="chip"><i></i><span>Нет подключения</span></span><div class="sp"></div>
+    <button class="btn ton" id="beep">Писк</button>
+    <button class="btn out" id="disc">Отключить</button>
+    
+    
+  </header>
+  <nav id="nav"><span class="ind"></span></nav>
+  <main id="main">
+    <section id="ov"><div class="g">
+      <div class="col">
+        <div class="card"><h2>Устройство</h2><dl class="kv">
+          <dt>Интерфейс</dt><dd>USB HID · 1629:1831</dd>
+          <dt>Протокол</dt><dd>RC4 + CRC-16/CCITT, 64-byte</dd>
+          <dt>Статус</dt><dd class="bad" id="ovst">не подключено</dd>
+          <dt>Зав. номер</dt><dd class="mono" id="ovsn">—</dd>
+          <dt>Тип устройства</dt><dd id="ovty">—</dd>
+          <dt>Прошивка</dt><dd>не отдаётся протоколом</dd>
+          <dt>Питание</dt><dd>USB · заряд не отдаётся</dd></dl></div>
+        <details class="card"><summary class="btn txt" style="display:inline-flex;list-style:none">Дополнительно</summary>
+          <dl class="kv" style="margin-top:12px"><dt>Хендшейк</dt><dd id="ovhs">—</dd><dt>Отчёты HID</dt><dd id="ovrp">—</dd><dt>Usage page</dt><dd class="mono" id="ovup">—</dd><dt>Ответ 06</dt><dd class="mono" id="ov06" style="word-break:break-all">—</dd></dl></details>
+      </div>
+      <div class="card"><h2>Быстрый старт</h2><ol style="padding-left:18px;display:grid;gap:8px">
+        <li>Закройте NFC_Pro.exe и подключите кабель.</li><li>Дождитесь зелёного статуса подключения.</li>
+        <li>Положите карту на считыватель.</li><li>Вкладка «Сканер» сама определит тип и заполнит данные.</li>
+        <li>MIFARE: чтение и запись секторов, дампы, подбор ключа.</li><li>125 кГц: чтение EM4100 и запись T5577/EM4305.</li></ol></div>
+    </div></section>
+
+    <section id="sc"><div class="card"><h2>Сканер меток</h2><div class="scan">
+      <div class="rings" id="srings"><b></b><b></b><b></b></div>
+      <div style="flex:1;min-width:240px"><div class="big" id="sres">Готово к сканированию</div>
+        <p class="hint" style="margin:8px 0 20px;max-width:460px">Положите карту или брелок на считыватель и нажмите «Сканировать». Программа определит тип метки и откроет нужную вкладку с заполненными данными.</p>
+        <button class="btn fil" id="sgo">Сканировать</button>
+        <p class="hint">Опрос идёт по очереди: 13.56 МГц → 125 кГц → HID (до ~10 секунд, если метки нет).</p></div></div></div>
+      <div class="card"><h2>Результат</h2><div class="mono" id="slast">—</div></div></section>
+
+    <section id="mf"><div class="g" style="grid-template-columns:minmax(280px,340px) 1fr">
+      <div class="col">
+        <div class="card"><h2>Карта</h2><dl class="kv" style="grid-template-columns:70px 1fr">
+          <dt>UID</dt><dd class="mono" id="mu">—</dd><dt>ATQA</dt><dd class="mono" id="ma">—</dd><dt>SAK</dt><dd class="mono" id="ms">—</dd><dt>Тип</dt><dd id="mt">—</dd></dl>
+          <div class="row m"><button class="btn ton" id="mrc">Прочитать карту</button></div></div>
+        <div class="card"><h2>Ключи</h2>
+          <label>Key A</label><div class="row" style="flex-wrap:nowrap"><input class="hx" id="ka" value="FFFFFFFFFFFF" maxlength="12"><button class="btn ton" id="auth" style="padding:0 16px;flex:none">Key A</button></div>
+          <label>Key B</label><input class="hx" id="kb" maxlength="12" placeholder="не задан"></div>
+        <div class="card"><h2>Действия</h2><div class="col" style="gap:8px">
+          <button class="btn fil" id="mra">Прочитать всю карту</button>
+          <div class="row" style="flex-wrap:nowrap"><button class="btn ton" id="msv" style="flex:1;padding:0 8px">Сохранить .mfd</button><button class="btn ton" id="mld" style="flex:1;padding:0 8px">Загрузить .mfd</button></div>
+          <button class="btn out" id="mwa">Записать всё в карту</button></div></div>
+      </div>
+      <div class="col">
+        <div class="card"><h2>Сектора</h2><div class="secs" id="secs"></div></div>
+        <div class="card"><h2 id="sh">Данные сектора 0 (64 байта, hex — по 16 байт в строке)</h2>
+          <textarea id="hexa" rows="4" spellcheck="false"></textarea>
+          <div class="row m"><button class="btn fil" id="mr">Читать сектор</button><button class="btn ton" id="mw">Записать сектор</button><button class="btn err" id="mf2">Форматировать</button></div>
+          <p class="hint">Key A при чтении маскируется в 00 — при записи подставляется из поля «Ключи».</p></div>
+      </div></div></section>
+
+    <section id="lf"><div class="g">
+      <div class="card"><h2>Чтение метки 125 кГц</h2><dl class="kv">
+        <dt>ID (hex)</dt><dd class="mono" id="lid">—</dd><dt>Customer</dt><dd class="mono" id="lcu">—</dd><dt>Номер</dt><dd class="mono" id="lnu">—</dd><dt>Формат</dt><dd class="mono" id="lfm">—</dd></dl>
+        <div class="row m"><button class="btn fil" id="lrd">Прочитать метку</button><button class="btn ton" id="lsv">Сохранить дамп</button><button class="btn ton" id="lld">Загрузить дамп</button></div>
+        <p class="hint">125 кГц — это EM4100/EM4200, T5577, EM4305. Метка читается как 5 байт: customer + 4 байта номера.</p></div>
+      <div class="card"><h2>Запись ID (T5577 / EM4305)</h2>
+        <label>Частота</label><select id="fq"><option>125 кГц</option><option>250 кГц</option><option>375 кГц</option><option>500 кГц</option><option>625 кГц</option><option>750 кГц</option><option>875 кГц</option><option>1000 кГц</option></select>
+        <label>Card ID (4 байта, hex)</label><input class="hx" id="cid" maxlength="8" placeholder="8 символов">
+        <label>Plant ID (1 байт, hex)</label><input class="hx" id="pid" maxlength="2" value="00">
+        <div class="row m"><button class="btn fil" id="lwr">Записать ID</button></div>
+        <p class="hint">Пустая T5577 читается как EM4100 только после записи.</p></div></div></section>
+
+    <section id="hd"><div class="g">
+      <div class="card"><h2>Чтение HID-метки</h2><dl class="kv"><dt>ID</dt><dd class="mono" id="hid" style="word-break:break-all">—</dd></dl>
+        <div class="row m"><button class="btn fil" id="hrd">Прочитать HID-метку</button><button class="btn ton" id="hsv">Сохранить дамп</button><button class="btn ton" id="hld">Загрузить дамп</button></div>
+        <p class="hint">HID Prox — проксимити-карты (пропуска, брелоки). После чтения поле записи заполняется автоматически.</p></div>
+      <div class="card"><h2>Запись HID-прокси (12 байт)</h2>
+        <label>ID (24 hex-символа)</label><input class="hx" id="hin" maxlength="24" placeholder="24 символа">
+        <div class="row m"><button class="btn fil" id="hwr">Записать HID</button></div>
+        <p class="hint">После записи прочитайте метку ещё раз.</p></div></div></section>
+
+    <section id="tl"><div class="g">
+      <div class="card"><h2>Словарь ключей</h2>
+        <div class="row"><div style="flex:1"><label>Сектор</label><select id="ts"></select></div><div style="flex:1"><label>Тип</label><select id="tty"><option>Key A</option><option>Key B</option></select></div></div>
+        <div class="row m"><button class="btn fil" id="tf">Подобрать ключ</button></div>
+        <p class="hint" id="tfr">Пробует ~30 частых ключей, начиная с FFFFFFFFFFFF. Найденный ключ попадает в Key A на вкладке MIFARE.</p></div>
+      <div class="card"><h2>Проверка magic-карты</h2>
+        <p>Определяет, можно ли менять UID: gen1a — по backdoor-команде, gen2/CUID — по пробной записи блока 0 с восстановлением данных.</p>
+        <div class="row m"><button class="btn fil" id="tm">Проверить карту</button></div><p class="hint" id="tmr">Положите карту на считыватель и нажмите кнопку.</p></div>
+      <div class="card"><h2>Сравнение дампов</h2><div class="row"><button class="btn ton" data-d="A">Загрузить дамп A</button><button class="btn ton" data-d="B">Загрузить дамп B</button></div>
+        <p class="hint" id="da">A: не загружен</p><p class="hint" style="margin-top:2px" id="db">B: не загружен</p>
+        <div class="row m"><button class="btn fil" id="tc">Сравнить</button></div><p class="hint" id="tcr"></p></div></div></section>
+
+    <section id="cn"><div class="card"><h2>Сырой запрос в устройство (hex)</h2>
+      <div class="row" style="flex-wrap:nowrap"><input class="hx" id="cin" value="06" spellcheck="false"><button class="btn fil" id="csd" style="flex:none">Отправить</button></div>
+      <p class="hint">Примеры: 06 · 09 01 02 · 21 · 28 01 00 · 29 · 1D 00</p></div>
+      <div class="card"><h2>Ответ устройства (расшифрованный)</h2><div class="mono" id="cout" style="white-space:pre-wrap;min-height:48px">—</div></div></section>
+  </main>
+  <footer class="card log"><h2 id="lg">Журнал</h2><div id="log"></div></footer>
+</div>
+
+<div id="start"><div class="card">
+  <h2 style="font-size:22px;margin:0">Подключение устройства</h2><p class="hint" style="margin:2px 0 0">NFC PM-Pro · 300CD Pro · VID_1629 · PID_1831</p>
+  <div class="scan"><div class="rings" id="rg"><b></b><b></b><b></b><span id="rgi"></span></div>
+    <div style="flex:1;min-width:220px"><div class="big" id="st1">Ожидание устройства…</div>
+      <p class="hint" id="st2">Подключите кабель USB и нажмите «Выбрать устройство».</p>
+      <p style="margin-top:16px"><span class="chip s0" id="chip2"><i></i><span>Нет подключения</span></span></p></div></div>
+  <div class="row" style="justify-content:space-between"><button class="btn out" id="sgear">Настройки</button><button class="btn fil" id="begin" disabled>Выбрать устройство</button></div>
+</div></div>
+
+<dialog id="dset"><h2>Настройки</h2>
+  <label>Вариант</label><div class="seg" data-k="d" id="sd"><button data-v="light">Светлая</button><button data-v="dark">Тёмная</button></div>
+  <label style="margin-top:18px">Цветовая схема</label><div class="sw" id="sw"></div>
+  <label style="margin-top:18px">Углы карточек</label><div class="seg" data-k="r"><button data-v="28">Круглые</button><button data-v="16">Средние</button><button data-v="8">Строгие</button></div><label style="margin-top:18px">Плотность</label><div class="seg" data-k="n"><button data-v="n">Обычная</button><button data-v="c">Компактная</button></div><label style="margin-top:18px">Размер текста</label><div class="seg" data-k="f"><button data-v="12">Мелкий</button><button data-v="13">Обычный</button><button data-v="15">Крупный</button></div><label style="margin-top:18px">Волна прогресса</label><div class="seg" data-k="w"><button data-v="3">Спокойная</button><button data-v="5">Обычная</button><button data-v="8">Яркая</button></div><label style="margin-top:18px">Анимации</label><div class="seg" data-k="a"><button data-v="on">Вкл</button><button data-v="off">Выкл</button></div><label style="margin-top:18px">Журнал при запуске</label><div class="seg" data-k="l"><button data-v="c">Свёрнут</button><button data-v="o">Раскрыт</button></div><div class="dact"><button class="btn txt" data-close>Готово</button></div></dialog>
+<dialog id="dcf"><h2 id="cft"></h2><p id="cfm"></p><div class="dact"><button class="btn txt" data-close>Отмена</button><button class="btn fil" id="cfo">Подтвердить</button></div></dialog>
+<dialog id="dhelp"><h2>Инструкция</h2>
+  <h3>Подключение</h3><ul><li>Полностью закройте NFC_Pro.exe — она захватывает устройство.</li><li>«Отключить» освобождает устройство; для работы подключите его снова.</li></ul>
+  <h3>Сканер</h3><ul><li>Опрашивает 13.56 МГц, затем 125 кГц, затем HID, сам открывает нужную вкладку и заполняет поля записи.</li></ul>
+  <h3>MIFARE</h3><ul><li>По умолчанию Key A = FFFFFFFFFFFF; кнопка рядом выбирает Key A, Key B или оба.</li><li>«Форматировать» сбрасывает сектор: данные в 00, ключи в FF.</li><li>Каждая запись проверяется обратным чтением.</li></ul>
+  <h3>Ограничения</h3><ul><li>Обновление прошивки не поддерживается — риск «кирпича».</li><li>Блок 0 с UID перезаписать нельзя.</li><li>Записывайте только свои метки или те, на которые есть разрешение.</li></ul>
+  <div class="dact"><button class="btn txt" data-close>Закрыть</button></div></dialog>
+<div id="tt"></div><div id="pg" class="card"><div class="row" style="justify-content:space-between;margin-bottom:6px"><b id="pt"></b><b id="pp" class="mono">0%</b></div><svg viewBox="0 0 400 24" width="100%" height="24" aria-hidden="true"><line id="pk" x1="20" y1="12" x2="394" y2="12" stroke-width="6" stroke-linecap="round"/><circle cx="396" cy="12" r="3"/><path id="pw" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<script src="js/core.js"></script>
+<script src="js/protocol.js"></script>
+<script src="js/connection.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/mifare.js"></script>
+<script src="js/lf-hid.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/scanner.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
